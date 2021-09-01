@@ -174,7 +174,7 @@ github.com/opencontainers/go-digest
 ## explicit
 github.com/opencontainers/image-spec/specs-go
 github.com/opencontainers/image-spec/specs-go/v1
-# github.com/openshift/api v0.0.0-20210831091943-07e756545ac1
+# github.com/openshift/api v0.0.0-20210831091943-07e756545ac1 => github.com/kwoodson/api v0.0.0-20210806045331-75d00a3054f9
 ## explicit
 github.com/openshift/api
 github.com/openshift/api/apiserver
@@ -1191,3 +1191,4 @@ sigs.k8s.io/yaml
 ## explicit
 vbom.ml/util/sortorder
 # vbom.ml/util => github.com/fvbommel/util v0.0.0-20180919145318-efcd4e0f9787
+# github.com/openshift/api => github.com/kwoodson/api v0.0.0-20210806045331-75d00a3054f9

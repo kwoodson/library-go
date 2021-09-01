@@ -8,9 +8,6 @@ import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 // +kubebuilder:subresource:status
 
 // Infrastructure holds cluster-wide information about Infrastructure.  The canonical name is `cluster`
-//
-// Compatibility level 1: Stable within a major release for a minimum of 12 months or 3 minor releases (whichever is longer).
-// +openshift:compatibility-gen:level=1
 type Infrastructure struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -124,7 +121,7 @@ const (
 )
 
 // PlatformType is a specific supported infrastructure provider.
-// +kubebuilder:validation:Enum="";AWS;Azure;BareMetal;GCP;Libvirt;OpenStack;None;VSphere;oVirt;IBMCloud;KubeVirt;EquinixMetal
+// +kubebuilder:validation:Enum="";AWS;Azure;BareMetal;GCP;Libvirt;OpenStack;None;VSphere;oVirt;IBMCloud;KubeVirt;EquinixMetal;AlibabaCloud
 type PlatformType string
 
 const (
@@ -163,6 +160,9 @@ const (
 
 	// EquinixMetalPlatformType represents Equinix Metal infrastructure.
 	EquinixMetalPlatformType PlatformType = "EquinixMetal"
+
+	// AlibabaCloudPlatformType represents Alibaba Cloud infrastructure.
+	AlibabaCloudPlatformType PlatformType = "AlibabaCloud"
 )
 
 // IBMCloudProviderType is a specific supported IBM Cloud provider cluster type
@@ -185,7 +185,7 @@ type PlatformSpec struct {
 	// balancers, dynamic volume provisioning, machine creation and deletion, and
 	// other integrations are enabled. If None, no infrastructure automation is
 	// enabled. Allowed values are "AWS", "Azure", "BareMetal", "GCP", "Libvirt",
-	// "OpenStack", "VSphere", "oVirt", "KubeVirt", "EquinixMetal", and "None". Individual components may not support
+	// "OpenStack", "VSphere", "oVirt", "KubeVirt", "EquinixMetal", "AlibabaCloud", and "None". Individual components may not support
 	// all platforms, and must handle unrecognized platforms as None if they do
 	// not support that platform.
 	//
@@ -231,6 +231,10 @@ type PlatformSpec struct {
 	// EquinixMetal contains settings specific to the Equinix Metal infrastructure provider.
 	// +optional
 	EquinixMetal *EquinixMetalPlatformSpec `json:"equinixMetal,omitempty"`
+
+	// AlibabaCloud contains settings specific to the Alibaba Cloud infrastructure provider.
+	// +optional
+	AlibabaCloud *AlibabaCloudPlatformSpec `json:"alibabaCloud,omitempty"`
 }
 
 // PlatformStatus holds the current status specific to the underlying infrastructure provider
@@ -242,7 +246,7 @@ type PlatformStatus struct {
 	// balancers, dynamic volume provisioning, machine creation and deletion, and
 	// other integrations are enabled. If None, no infrastructure automation is
 	// enabled. Allowed values are "AWS", "Azure", "BareMetal", "GCP", "Libvirt",
-	// "OpenStack", "VSphere", "oVirt", "EquinixMetal", and "None". Individual components may not support
+	// "OpenStack", "VSphere", "oVirt", "EquinixMetal", "AlibabaCloud", and "None". Individual components may not support
 	// all platforms, and must handle unrecognized platforms as None if they do
 	// not support that platform.
 	//
@@ -289,6 +293,10 @@ type PlatformStatus struct {
 	// EquinixMetal contains settings specific to the Equinix Metal infrastructure provider.
 	// +optional
 	EquinixMetal *EquinixMetalPlatformStatus `json:"equinixMetal,omitempty"`
+
+	// AlibabaCloud contains settings specific to the Alibaba Cloud infrastructure provider.
+	// +optional
+	AlibabaCloud *AlibabaCloudPlatformStatus `json:"alibabaCloud,omitempty"`
 }
 
 // AWSServiceEndpoint store the configuration of a custom url to
@@ -573,12 +581,45 @@ type EquinixMetalPlatformStatus struct {
 	IngressIP string `json:"ingressIP,omitempty"`
 }
 
+// AlibabaCloudPlatformSpec holds the desired state of the Alibaba Cloud infrastructure provider.
+// This only includes fields that can be modified in the cluster.
+type AlibabaCloudPlatformSpec struct{}
+
+// AlibabaCloudPlatformStatus holds the current status of the Alibaba Cloud infrastructure provider.
+type AlibabaCloudPlatformStatus struct {
+	// region specifies the region for Alibaba Cloud resources created for the cluster.
+	// +kubebuilder:validation:Pattern=`^[0-9A-Za-z-]+$`
+	// +required
+	Region string `json:"region"`
+	// resourceGroupID is the ID of the resource group for the cluster.
+	// +kubebuilder:validation:Pattern=`^rg-[0-9A-Za-z]+$`
+	// +required
+	ResourceGroupID string `json:"resourceGroupID"`
+	// resourceTags is a list of additional tags to apply to Alibaba Cloud resources created for the cluster.
+	// +kubebuilder:validation:MaxItems=20
+	// +optional
+	ResourceTags []AlibabaCloudResourceTag `json:"resourceTags,omitempty"`
+}
+
+// AlibabaCloudResourceTag is the set of tags to add to apply to resources.
+type AlibabaCloudResourceTag struct {
+	// key is the key of the tag.
+	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:MinLength=1
+	// +kubebuilder:validation:MaxLength=128
+	// +required
+	Key string `json:"key"`
+	// value is the value of the tag.
+	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:MinLength=1
+	// +kubebuilder:validation:MaxLength=128
+	// +required
+	Value string `json:"value"`
+}
+
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // InfrastructureList is
-//
-// Compatibility level 1: Stable within a major release for a minimum of 12 months or 3 minor releases (whichever is longer).
-// +openshift:compatibility-gen:level=1
 type InfrastructureList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata"`
